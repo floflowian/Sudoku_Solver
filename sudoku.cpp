@@ -3,8 +3,11 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <time.h>
+#include <boost/chrono/thread_clock.hpp>
 
 using namespace std;
+using namespace boost::chrono;
 
 Sudoku::Sudoku()
 {
@@ -40,102 +43,78 @@ void Sudoku::printGrid(){
 		}
 		cout << endl;
 	}
-
+	cout << endl;
 }
 
 void Sudoku::bruteForce(){
+	thread_clock::time_point start = thread_clock::now();
 	int value = 1;
-	bool advance = false;
 	int i = 0, j = 0;
-	while (i!=8 || j!=8){
-		if (j == 8){
-			cout << "jsuis a 8";
-		}
-		cout << i << "," << j<<endl;
-			//cout << "je matte " << i << "," << j << endl;
-			if (checkColumn(j, value) == 0 && checkRow(i, value) == 0 && checkSquare(i, j, value) == 0){
-				//cout << value << " marche en " << i << "," << j<<endl;
-				grid[i][j] = value;
-
-				keepAdvancing:
+	while (1){
+		if (checkColumn(j, value) == 0 && checkRow(i, value) == 0 && checkSquare(i, j, value) == 0){ //Next cell
+			grid[i][j] = value;
+			keepAdvancing:
+				if (j == 8 && i == 8) { break; }
 				if (j == 8){ ++i; j = 0; }
 				else ++j;
 				if (initialGrid[i][j] != 0) goto keepAdvancing;
-				cout << "javance en " << i << "," << j << endl;
 				value = 1;
-				//cout << endl << endl;
-				//printGrid();
-			}
+		}
 
-			else if (value == 9){//backtrack
-				
-				keepBacktracking:
-				if (j != 0) --j;
-				else{ 
-					--i; j = 8;}
-				if (initialGrid[i][j] != 0) goto keepBacktracking;
-				cout << "backtrack en " << i << "," << j << endl;
-
-				if (grid[i][j] != 9) {
-					value = grid[i][j] + 1; grid[i][j] = 0;
+		else if (value == 9){ //Backtrack
+			keepBacktracking:
+			if (j != 0) --j; 
+			else{--i; j = 8;}
+			if (initialGrid[i][j] != 0) goto keepBacktracking;
+			if (grid[i][j] != 9) {value = grid[i][j] + 1; grid[i][j] = 0;}
+			else {
+					grid[i][j] = 0; goto keepBacktracking;
 				}
-				else goto keepBacktracking;
+		}
 
-				//cout << endl << endl;
-				//printGrid();
-			}
-
-			else{
-				//cout << value << " marche pas en " << i << "," << j << endl;
-				++value; //cout << endl << endl; printGrid();
-			}
-		
+		else ++value; //Increment current cell
 	}
+	thread_clock::time_point stop = thread_clock::now();
+	cout << "Duration: " << duration_cast<milliseconds>(stop - start).count() << " ms" << endl<<endl;
 	printGrid();
-	
-}
-
-int Sudoku::checkCell(int i, int j, int value){
-	return 0;
-
 }
 
 int Sudoku::checkRow(int i, int value){
 	int *ptr = &grid[i][0];
-	if (*ptr == value) { return -1; }
-	for (i = 1; i <= 9; ++i)
+	if (*ptr == value) return -1;
+	for (i = 1; i < 9; ++i)
 	{
 		++ptr;
-		if (*ptr == value) { return -1; }
+		if (*ptr == value) return -1; 
 	}
-	{return 0; }
+	return 0; 
 }
 
 int Sudoku::checkColumn(int i, int value){
 	int *ptr = &grid[0][i];
-	if (*ptr == value) {  return -1; }
+	if (*ptr == value) return -1; 
 	for (i = 1; i < 9; ++i)
 	{
 		ptr+=9;
-		if (*ptr == value) { return -1; }
+		if (*ptr == value) return -1;
 	}
-	{ return 0; }
+	return 0; 
 }
 
 int Sudoku::checkSquare(int i,int j, int value){
 	int squareI = floor(i / 3);
 	int squareJ = floor(j / 3);
 	int *ptr = &grid[squareI*3][squareJ*3];
-	if (*ptr == value) { return -1; }
+	if (*ptr == value) return -1; 
 	for (i = 1; i <=3; ++i)
 	{
 		++ptr;
-		if (*ptr == value) {  return -1; }
+		if (*ptr == value)  return -1; 
 		++ptr;
-		if (*ptr == value) { return -1; }
+		if (*ptr == value) return -1; 
 		if (i != 3){
 			ptr += 7;
-			if (*ptr == value) { return -1; }
+			if (*ptr == value) return -1;
 		}
 	}
 	return 0;
