@@ -5,16 +5,21 @@
 #include <fstream>
 #include <time.h>
 #include <boost/chrono/thread_clock.hpp>
+#include <direct.h>
 
 using namespace std;
 using namespace boost::chrono;
 
 Sudoku::Sudoku()
 {
+	char *path = NULL;
+	path = _getcwd(NULL, 0);
 	char number[10];
 	cout << "Grid number : ";
 	cin >> number;
-	string gridfile = "C:/Users/Florian/Downloads/C++/SudokuSolver/SudokuSolver/grids/grid";
+	string gridfile;
+	gridfile.insert(gridfile.size(), path);
+	gridfile.insert(gridfile.size(), "/grids/grid");
 	gridfile.insert(gridfile.size(), number);
 	gridfile.insert(gridfile.size(), ".txt");
 
@@ -30,7 +35,6 @@ Sudoku::Sudoku()
 		}
 	}
 }
-
 
 Sudoku::~Sudoku()
 {
